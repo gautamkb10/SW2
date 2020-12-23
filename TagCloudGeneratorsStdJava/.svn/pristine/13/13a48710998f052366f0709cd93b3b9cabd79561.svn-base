@@ -1,0 +1,405 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Scanner;
+import java.util.Set;
+
+/**
+ * A Java program that generates a tag cloud from a given input text using
+ * Standard Java Component Family.
+ *
+ * @author Keshab Gautam and Tej Patel
+ */
+public final class TagCloudGeneratorJavaStd {
+
+    /**
+     * Default constructor--private to prevent instantiation.
+     */
+    private TagCloudGeneratorJavaStd() {
+        // no code needed here
+    }
+
+    /**
+     * Alphabetizes the words in our Map.
+     */
+    private static class ALPHABETIZE
+            implements Comparator<Map.Entry<String, Integer>> {
+
+        @Override
+        public int compare(Map.Entry<String, Integer> o1,
+                Map.Entry<String, Integer> o2) {
+
+            return o1.getKey().compareToIgnoreCase(o2.getKey());
+        }
+    }
+
+    /**
+     * Sorts the map by largest count of words to smallest.
+     */
+    private static class COUNTSORT
+            implements Comparator<Map.Entry<String, Integer>> {
+
+        @Override
+        public int compare(Map.Entry<String, Integer> o1,
+                Map.Entry<String, Integer> o2) {
+
+            return o2.getValue().compareTo(o1.getValue());
+        }
+    }
+
+    /**
+     * Sorts {@code allWordsMap} into a PriorityQueue according to
+     * {@code countSort} and then {@code wordSort}.
+     *
+     * @param allWordsMap
+     *            Map containing all words with their occurrences.
+     *
+     * @param numWordsWanted
+     *            Number of words wanted by the user.
+     *
+     * @param countSort
+     *            Comparator that sorts numbers in a descending order
+     *
+     * @param wordSort
+     *            Comparator that sorts words alphabetically
+     *
+     * @return PriorityQueue with alphabetically most frequent words sorted.
+     *
+     */
+
+    private static PriorityQueue<Map.Entry<String, Integer>> sortFrequentWords(
+            Map<String, Integer> allWordsMap, int numWordsWanted,
+            Comparator<Map.Entry<String, Integer>> countSort,
+            Comparator<Map.Entry<String, Integer>> wordSort) {
+
+        PriorityQueue<Map.Entry<String, Integer>> occurrenceSorted = new PriorityQueue<>(
+                countSort);
+        PriorityQueue<Map.Entry<String, Integer>> wordsSorted = new PriorityQueue<>(
+                wordSort);
+
+        for (Map.Entry<String, Integer> pair : allWordsMap.entrySet()) {
+
+            occurrenceSorted.add(pair);
+        }
+
+        for (int i = 0; i < numWordsWanted; i++) {
+
+            wordsSorted.add(occurrenceSorted.remove());
+        }
+
+        return wordsSorted;
+
+    }
+
+    /**
+     * adds the separator characters and counts the number of time a word
+     * appears in the user inputed text file.
+     *
+     * @param wordMap
+     *            map of words from the user file
+     * @param in
+     *            text file provided by the user
+     * @requires size of inputted Word to be greater than or equal to zero
+     *
+     * @requires Input is open
+     *
+     * @ensure all the words get inputed from user text file to inputted Word
+     */
+    private static void countWord(Map<String, Integer> wordMap,
+            BufferedReader in) {
+
+        java.util.Set<Character> separators = new HashSet<Character>();
+
+        separators.add(' ');
+        separators.add('.');
+        separators.add('-');
+        separators.add('*');
+        separators.add('_');
+        separators.add('(');
+        separators.add(')');
+        separators.add('+');
+        separators.add('=');
+        separators.add('^');
+        separators.add('~');
+        separators.add('`');
+        separators.add(',');
+        separators.add('/');
+        separators.add(':');
+        separators.add(';');
+        separators.add('\'');
+        separators.add('?');
+        separators.add('!');
+        separators.add('0');
+        separators.add('1');
+        separators.add('2');
+        separators.add('3');
+        separators.add('4');
+        separators.add('5');
+        separators.add('6');
+        separators.add('7');
+        separators.add('8');
+        separators.add('9');
+        separators.add(']');
+        separators.add('[');
+        separators.add('}');
+        separators.add('{');
+        try {
+            String words = in.readLine();
+            while (words != null) {
+                int index = 0;
+                while (index < words.length()) {
+                    String word = wordSeparator(words, index, separators)
+                            .toLowerCase();
+                    if (!separators.contains(word.charAt(0))) {
+                        if (wordMap.containsKey(word)) {
+                            int wordCount = wordMap.remove(word);
+                            wordCount++;
+                            wordMap.put(word, wordCount);
+                        } else {
+                            wordMap.put(word, 1);
+                        }
+                    }
+                    index += word.length();
+                }
+                words = in.readLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading from file");
+        }
+    }
+
+    /**
+     * This method finds and returns the first word starting at the given
+     * position in the given text.
+     *
+     * @param text
+     *            the string to get the word
+     * @param position
+     *            Starting position to check the word
+     * @param separators
+     *            set of the separators
+     * @requires the position is not empty and position is less than the length
+     *           of the text
+     * @return the first word in the starting position
+     */
+    private static String wordSeparator(String text, int position,
+            Set<Character> separators) {
+        assert text != null : "Violation of: text is not null";
+        assert separators != null : "Violation of: separators is not null";
+        assert 0 <= position : "Violation of: 0 <= position";
+        assert position < text.length() : "Violation of: position < |text|";
+
+        char firstWord = text.charAt(position);
+        String nextWord = "";
+        int i = position + 1;
+        nextWord = nextWord + firstWord;
+        if (!separators.contains(firstWord)) {
+            while (i < text.length() && !separators.contains(firstWord)) {
+                firstWord = text.charAt(i);
+                if (!separators.contains(firstWord)) {
+                    String x = "" + firstWord;
+                    nextWord = nextWord.concat(x);
+
+                }
+                i++;
+            }
+        } else {
+            while (i < text.length() && separators.contains(firstWord)) {
+                firstWord = text.charAt(i);
+                if (separators.contains(firstWord)) {
+                    String x = "" + firstWord;
+                    nextWord = nextWord.concat(x);
+                }
+                i++;
+            }
+        }
+        return nextWord;
+    }
+
+    /**
+     * Output of the header.
+     *
+     * @param output
+     *            output
+     * @param numOfWord
+     *            the number of words to be included in the generated tag cloud
+     * @param inputFile
+     *            the name of an input file from the user
+     *
+     * @requires Output is open
+     */
+    public static void header(PrintWriter output, int numOfWord,
+            String inputFile) {
+        output.println("<html>");
+        output.println("<head>");
+        output.println("<title>Top " + numOfWord + " words in " + inputFile
+                + "</title>");
+        output.println(
+                "<link href=\"http://web.cse.ohio-state.edu/software/2231/web-sw2/"
+                        + "assignments/projects/tag-cloud-generator/data/"
+                        + "tagcloud.css\" rel=\"stylesheet\""
+                        + "type=\"text/css\">");
+        output.println("</head>");
+        output.println("<body>");
+        output.println(
+                "<h2>Top " + numOfWord + " words in " + inputFile + "</h2>");
+        output.println("<hr>");
+        output.println("<div class =\"cdiv\">");
+        output.println("<p class =\"cbox\">");
+    }
+
+    /**
+     * End the output.
+     *
+     * @param output
+     *            output
+     *
+     * @requires Output is open
+     */
+    public static void end(PrintWriter output) {
+        output.println("</p>");
+        output.println("</div>");
+        output.println("</body>");
+        output.println("</html>");
+
+    }
+
+    /**
+     * Sorts the number of words and prints out in the output file.
+     *
+     * @param wordMap
+     *            map of words from the user file
+     * @param sortedWords
+     *            sorted words in a PriorityQueue
+     * @param output
+     *            output file to display the words
+     *
+     * @requires wordMap != empty
+     *
+     */
+    private static void font(Map<String, Integer> wordMap,
+            PriorityQueue<Map.Entry<String, Integer>> sortedWords,
+            PrintWriter output) {
+
+        int max = 0;
+        int min = 0;
+        final int fontMin = 11;
+        final int fontMax = 48;
+
+        for (Map.Entry<String, Integer> wordPair : wordMap.entrySet()) {
+
+            if (wordPair.getValue() > max) {
+                max = wordPair.getValue();
+            } else if (wordPair.getValue() < min) {
+                min = wordPair.getValue();
+            }
+        }
+
+        if ((max - min) <= (fontMax - fontMin)) {
+
+            while (sortedWords.size() > 0) {
+
+                Map.Entry<String, Integer> pair = sortedWords.remove();
+
+                int fontSize = (pair.getValue() - min) + fontMin;
+
+                output.println("<span style=\"cursor:default\" class=\"f"
+                        + fontSize + "\" title=\"count: " + pair.getValue()
+                        + "\">" + pair.getKey() + "</span>");
+            }
+        } else {
+
+            int fontRange = (max - min) / (fontMax - fontMin);
+
+            while (sortedWords.size() > 0) {
+
+                Map.Entry<String, Integer> pair = sortedWords.remove();
+
+                int fontSize = (pair.getValue() / fontRange) + fontMin;
+
+                output.println("<span style=\"cursor:default\" class=\"f"
+                        + fontSize + "\" title=\"count: " + pair.getValue()
+                        + "\">" + pair.getKey() + "</span>");
+            }
+        }
+
+    }
+
+    /**
+     * Main method.
+     *
+     * @param args
+     *            the command line arguments; unused here
+     */
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+
+        //get an input file name from the user
+        System.out.print("Please enter an input file name: ");
+        String inputFileName = in.nextLine();
+        //get an output file name from the user
+        System.out.print("Please enter an output file name: ");
+        String outputFileName = in.nextLine();
+
+        Comparator<Map.Entry<String, Integer>> countSort = new ALPHABETIZE();
+        Comparator<Map.Entry<String, Integer>> wordSort = new COUNTSORT();
+
+        Map<String, Integer> wordMap = new HashMap<String, Integer>();
+
+        BufferedReader input;
+        try {
+            input = new BufferedReader(new FileReader(inputFileName));
+            countWord(wordMap, input);
+        } catch (IOException e) {
+            System.err.println("Error opening the user INPUT file");
+            in.close();
+            return;
+        }
+
+        try {
+            input.close();
+
+        } catch (IOException e) {
+            System.err.println("Error: closing the file");
+        }
+
+        System.out.print(
+                "Please enter the number of words in the generated tag cloud: ");
+        int numberOfWord = in.nextInt();
+        while (wordMap.size() < numberOfWord) {
+            System.out.println(
+                    "Your input file does not contain that many words.");
+            System.out.print(
+                    "Please enter the number of words in the generated tag cloud: ");
+            numberOfWord = in.nextInt();
+        }
+
+        in.close();
+
+        PriorityQueue<Map.Entry<String, Integer>> sortedWords = sortFrequentWords(
+                wordMap, numberOfWord, wordSort, countSort);
+
+        PrintWriter output;
+        try {
+            output = new PrintWriter(new FileWriter(outputFileName));
+            header(output, numberOfWord, inputFileName);
+            font(wordMap, sortedWords, output);
+            end(output);
+
+        } catch (IOException e) {
+            System.err.println("Error opening the user OUTPUT file");
+            return;
+
+        }
+
+        output.close();
+    }
+
+}
