@@ -1,0 +1,158 @@
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import components.map.Map;
+import components.set.Set;
+
+/**
+ * JUnit test fixture for {@code Set<String>}'s constructor and kernel methods.
+ *
+ * @author Put your name here
+ *
+ */
+public abstract class SetTest {
+
+    /**
+     * Invokes the appropriate {@code Set} constructor for the implementation
+     * under test and returns the result.
+     *
+     * @return the new set
+     * @ensures constructorTest = {}
+     */
+    protected abstract Set<String> constructorTest();
+
+    /**
+     * Invokes the appropriate {@code Set} constructor for the reference
+     * implementation and returns the result.
+     *
+     * @return the new set
+     * @ensures constructorRef = {}
+     */
+    protected abstract Set<String> constructorRef();
+
+    /**
+     * Creates and returns a {@code Set<String>} of the implementation under
+     * test type with the given entries.
+     *
+     * @param args
+     *            the entries for the set
+     * @return the constructed set
+     * @requires [every entry in args is unique]
+     * @ensures createFromArgsTest = [entries in args]
+     */
+    private Set<String> createFromArgsTest(String... args) {
+        Set<String> set = this.constructorTest();
+        for (String s : args) {
+            assert !set.contains(
+                    s) : "Violation of: every entry in args is unique";
+            set.add(s);
+        }
+        return set;
+    }
+
+    /**
+     * Creates and returns a {@code Set<String>} of the reference implementation
+     * type with the given entries.
+     *
+     * @param args
+     *            the entries for the set
+     * @return the constructed set
+     * @requires [every entry in args is unique]
+     * @ensures createFromArgsRef = [entries in args]
+     */
+    private Set<String> createFromArgsRef(String... args) {
+        Set<String> set = this.constructorRef();
+        for (String s : args) {
+            assert !set.contains(
+                    s) : "Violation of: every entry in args is unique";
+            set.add(s);
+        }
+        return set;
+    }
+
+    /**
+     * Test for constructor empty.
+     */
+    @Test
+    public final void testConstructorEmpty() {
+        Set <String> s = this.constructorTest();
+        Set <String> sExpected = this.constructorRef();
+
+        assertEquals(s, sExpected);
+    }
+    
+  /**
+   * Test Add to Empty
+   */
+    
+    @Test 
+    public final void testAddEmpty() {
+        
+        Set <String> s = this.constructorTest());
+        Set <String> sExpected = this.constructorRef("Elephants");
+        
+        s.add("Elephants");
+        
+        assertEquals(s,sExpected);
+    }
+    
+    /**
+     * Test Add to Non-Empty
+     */
+      
+      @Test 
+      public final void testAddNonEmpty() {
+          
+          Set <String> s =this.constructorTest("Elephants", "Dogs");
+          Set <String> sExpected = this.constructorRef("Elephants","Dogs","Peacock");
+          
+          s.add("Peacock");
+          
+          assertEquals(s,sExpected);
+      }
+      
+      /**
+       * Test Remove to Empty
+       */
+        
+        @Test 
+        public final void testRemoveEmpty() {
+            
+            Set <String> s =this.constructorTest( "Dogs");
+            Set <String> sExpected = this.constructorRef();
+            
+            String r = s.remove();
+            String rExpected = "Dogs";
+            
+            assertEquals(s,sExpected);
+            assertEquals(r,rExpected);
+        }
+        
+        /**
+         * Test Remove to Non-Empty
+         */
+          
+          @Test 
+          public final void testRemoveNonEmpty() {
+              
+              Set <String> s =this.constructorTest( "Dogs", "Hippos");
+              Set <String> sExpected = this.constructorRef("Hippos");
+              
+              String r = s.remove();
+              String rExpected = "Dogs";
+              
+              assertEquals(s,sExpected);
+              assertEquals(r,rExpected);
+          }
+          
+          /**
+           * Test RemoveAny to Empty
+           */
+            
+            @Test 
+            public final void testRemoveAnyEmpty() {
+                
+               
+            }
+}
